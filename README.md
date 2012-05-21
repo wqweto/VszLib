@@ -1,22 +1,22 @@
-# VszLib
+## VszLib
 
 7-zip SDK supports several compression methods and can produce and read 7z, zip, gzip, tar, bzip2 and other archives. This is a VB6 helper component that makes using original 7z.dll in your VB6 projects possible. 
 
-## Simple compress
+### Simple compress
 
     With New cVszArchive
         .AddFile "your_file"
         .CompressArchive "test.7z"
     End With
 
-## Extract
+### Extract
 
     With New cVszArchive
         .OpenArchive "test.7z"
         .Extract "extract_folder"
     End With
 
-## More compression
+### More compression
 
     With New cVszArchive
         .AddFile "your_file"
