@@ -1,0 +1,932 @@
+[
+  uuid(2832322f-cab4-4786-823f-c0a411c83125),
+  version(1.0),
+  helpstring("7-zip Interfaces Typelib 1.0 (wqweto@gmail.com)")
+]
+library VbSevenZip
+{
+    importlib("stdole2.tlb");
+
+	interface IVszProgress;
+	interface IVszCryptoGetTextPassword;
+	interface IVszCryptoGetTextPassword2;
+	interface IVszSequentialInStream;
+	interface IVszSequentialOutStream;
+	interface IVszInStream;
+	interface IVszOutStream;
+	interface IVszStreamGetSize;
+	interface IVszOutStreamFlush;
+	interface IVszArchiveOpenCallback;
+	interface IVszArchiveExtractCallback;
+	interface IVszArchiveOpenVolumeCallback;
+	interface IVszInArchiveGetStream;
+	interface IVszArchiveOpenSetSubArchiveName;
+	interface IVszInArchive;
+	interface IVszArchiveUpdateCallback;
+	interface IVszArchiveUpdateCallback2;
+	interface IVszOutArchive;
+	interface IVszSetProperties;
+	interface IVszCompressProgressInfo;
+	interface IVszCompressCoder;
+	interface IVszCompressCoder2;
+	interface IVszCompressSetCoderProperties;
+	interface IVszCompressSetDecoderProperties2;
+	interface IVszCompressWriteCoderProperties;
+	interface IVszCompressGetInStreamProcessedSize;
+	interface IVszCompressSetCoderMt;
+	interface IVszCompressGetSubStreamSize;
+	interface IVszCompressSetInStream;
+	interface IVszCompressSetOutStream;
+	interface IVszCompressSetInStreamSize;
+	interface IVszCompressSetOutStreamSize;
+	interface IVszCompressFilter;
+	interface IVszCryptoProperties;
+	interface IVszCryptoSetPassword;
+	interface IVszCryptoSetCRC;
+    
+    typedef unsigned char BYTE;
+    typedef int VBVARTYPE;
+    typedef int DWORD;
+    typedef int UINT;
+    typedef [public] int INT_PTR;
+
+	typedef struct {
+        long    Data1;
+        short   Data2;
+        short   Data3;
+        BYTE    Data4[8];
+    } VszGUID;
+
+    typedef enum {
+    	S_OK = 0,
+    	S_FALSE = 1,
+    	E_ABORT = 0x80004004
+    } VszHRESULT;
+
+    typedef enum {
+        CLSCTX_INPROC_SERVER = 1,
+        CLSCTX_INPROC_HANDLER = 2,
+        CLSCTX_LOCAL_SERVER = 4,
+        CLSCTX_REMOTE_SERVER = 16
+    } VszCLSCTX;
+
+    
+	//******************************************************************************
+	// PropID.h
+	//******************************************************************************
+	
+	typedef enum {
+		vszNoProperty       = 0,
+		
+		vszHandlerItemIndex = 2,
+		[helpstring("VT_BSTR")]
+		vszPath             = 3,  // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszName             = 4,  // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszExtension        = 5,  // VT_BSTR
+		[helpstring("VT_BOOL")]
+		vszIsFolder         = 6,  // VT_BOOL
+		[helpstring("VT_UI8")]
+		vszSize             = 7,  // VT_UI8
+		[helpstring("VT_UI8")]
+		vszPackedSize       = 8,  // VT_UI8
+		[helpstring("VT_UI4")]
+		vszAttributes       = 9,  // VT_UI4
+		[helpstring("VT_FILETIME")]
+		vszCreationTime     = 10, // VT_FILETIME
+		[helpstring("VT_FILETIME")]
+		vszLastAccessTime   = 11, // VT_FILETIME
+		[helpstring("VT_FILETIME")]
+		vszLastWriteTime    = 12, // VT_FILETIME
+		[helpstring("VT_BOOL")]
+		vszSolid            = 13, // VT_BOOL
+		[helpstring("VT_BOOL")]
+		vszCommented        = 14, // VT_BOOL
+		[helpstring("VT_BOOL")]
+		vszEncrypted        = 15, // VT_BOOL
+		[helpstring("VT_BOOL")]
+		vszSplitBefore      = 16, // VT_BOOL
+		[helpstring("VT_BOOL")]
+		vszSplitAfter       = 17, // VT_BOOL
+		[helpstring("VT_UI4")]
+		vszDictionarySize   = 18, // VT_UI4
+		[helpstring("VT_UI4")]
+		vszCRC              = 19, // VT_UI4
+		[helpstring("VT_BSTR")]
+		vszType             = 20, // VT_BSTR
+		[helpstring("VT_BOOL")]
+		vszIsAnti           = 21, // VT_BOOL
+		[helpstring("VT_BSTR")]
+		vszMethod           = 22, // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszHostOS           = 23, // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszFileSystem       = 24, // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszUser             = 25, // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszGroup            = 26, // VT_BSTR
+		[helpstring("VT_UI4")]
+		vszBlock            = 27, // VT_UI4
+		[helpstring("VT_BSTR")]
+		vszComment          = 28, // VT_BSTR
+		[helpstring("VT_UI4")]
+		vszPosition         = 29, // VT_UI4
+		[helpstring("VT_BSTR")]
+		vszPrefix           = 30, // VT_BSTR
+		[helpstring("VT_UI4")]
+		vszNumSubDirs       = 31, // VT_UI4
+		[helpstring("VT_UI4")]
+		vszNumSubFiles      = 32, // VT_UI4
+		[helpstring("VT_UI1")]
+		vszUnpackVer        = 33, // VT_UI1
+		[helpstring("VT_UI4")]
+		vszVolume           = 34, // VT_UI4
+		[helpstring("VT_BOOL")]
+		vszIsVolume         = 35, // VT_BOOL
+		[helpstring("VT_UI8")]
+		vszOffset           = 36, // VT_UI8
+		[helpstring("VT_UI4")]
+		vszLinks            = 37, // VT_UI4
+		[helpstring("VT_UI4")]
+		vszNumBlocks        = 38, // VT_UI4
+		[helpstring("VT_UI4")]
+		vszNumVolumes       = 39, // VT_UI4
+		[helpstring("VT_UI4")]
+		vszTimeType         = 40, // VT_UI4
+		[helpstring("VT_BOOL")]
+		vszBit64            = 41, // VT_BOOL
+		[helpstring("VT_BOOL")]
+		vszBigEndian        = 42, // VT_BOOL
+		[helpstring("VT_BSTR")]
+		vszCpu              = 43, // VT_BSTR
+		[helpstring("VT_UI8")]
+		vszPhySize          = 44, // VT_UI8
+		[helpstring("VT_UI8")]
+		vszHeadersSize      = 45, // VT_UI8
+		[helpstring("VT_UI4")]
+		vszChecksum         = 46, // VT_UI4
+		[helpstring("VT_BSTR")]
+		vszCharacts         = 47, // VT_BSTR
+		
+		[helpstring("VT_UI8")]
+		vszVa               = 48, // VT_UI8
+		
+		[helpstring("VT_UI8")]
+		vszTotalSize        = 0x1100, // VT_UI8
+		[helpstring("VT_UI8")]
+		vszFreeSpace        = 0x1101, // VT_UI8
+		[helpstring("VT_UI8")]
+		vszClusterSize      = 0x1102, // VT_UI8
+		[helpstring("VT_BSTR")]
+		vszVolumeName       = 0x1103, // VT_BSTR
+
+		[helpstring("VT_BSTR")]
+		vszLocalName        = 0x1200, // VT_BSTR
+		[helpstring("VT_BSTR")]
+		vszProvider         = 0x1201, // VT_BSTR
+		
+		vszUserDefined      = 0x10000,
+	} VszItemPropID;
+
+	typedef enum {
+	    vszWindows = 0,
+	    vszUnix,
+	    vszDOS
+	} VszFileTimeType;
+	
+	typedef enum {
+		[helpstring("string")]
+	    vszName = 0,          // string
+	    [helpstring("GUID")]
+	    vszClassID,           // GUID
+	    [helpstring("string: zip rar gz")]
+	    vszExtension,         // string  zip rar gz
+	    [helpstring("sub archive: tar ")]
+	    vszAddExtension,      // sub archive: tar 
+	    [helpstring("bool")]
+	    vszUpdate,            // bool
+	    [helpstring("bool")]
+	    vszKeepName,          // bool
+	    [helpstring("string[4]: PK.. 7z.. Rar!")]
+	    vszStartSignature,    // string[4] ex: PK.. 7z.. Rar!
+	    vszFinishSignature,
+	    vszAssociate
+	} VszArchivePropID;
+	
+	typedef enum {
+	    vszExtract = 0,
+	    vszTest,
+	    vszSkip
+	} VszAskMode;
+	
+	typedef enum {
+	    vszOK = 0,
+	    vszUnSupportedMethod,
+	    vszDataError,
+	    vszCRCError
+	} VszExtOperationResult;
+	
+	typedef enum {
+	    vszOK = 0,
+	    vszError
+	} VszUpdOperationResult;
+	
+	typedef enum {
+		vszDictionarySize    = 0x400,
+		vszUsedMemorySize    = 0x401,
+		vszOrder             = 0x402,
+		vszPosStateBits      = 0x440,
+		vszLitContextBits    = 0x441,
+		vszLitPosBits        = 0x442,
+		vszNumFastBytes      = 0x450,
+		vszMatchFinder       = 0x451,
+		vszMatchFinderCycles = 0x452,
+		vszNumPasses         = 0x460,
+		vszAlgorithm         = 0x470,
+		vszMultiThread       = 0x480,
+		vszNumThreads        = 0x481,
+		vszEndMarker         = 0x490,
+	} VszCoderPropID;
+
+	typedef enum {
+	    vszID = 0,
+	    vszName,
+	    vszDecoder,
+	    vszEncoder,
+	    vszInStreams,
+	    vszOutStreams,
+	    vszDescription,
+	    vszDecoderIsAssigned,
+	    vszEncoderIsAssigned
+	} VszMethodPropID;
+
+	//******************************************************************************
+	// IProgress.h
+	//******************************************************************************
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000000050000),
+      version(1.0),
+    ]
+    interface IVszProgress : IUnknown {
+		HRESULT SetTotal([in] INT_PTR total);
+		HRESULT SetCompleted([in] INT_PTR completeValue);
+	}
+
+	//******************************************************************************
+	// IPassword.h
+	//******************************************************************************
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000500100000),
+      version(1.0),
+    ]
+    interface IVszCryptoGetTextPassword : IUnknown {
+	    HRESULT CryptoGetTextPassword([out, retval] BSTR *password);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000500110000),
+      version(1.0),
+    ]
+    interface IVszCryptoGetTextPassword2 : IUnknown {
+	   	HRESULT CryptoGetTextPassword2(
+	    		[in, out] int *passwordIsDefined,
+	    		[out, retval] BSTR *password);
+	}
+
+	//******************************************************************************
+	// IStream.h
+	// "23170F69-40C1-278A-0000-000300xx0000"
+	//******************************************************************************
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300010000),
+      version(1.0),
+    ]
+    interface IVszSequentialInStream : IUnknown {
+	  	HRESULT Read(
+	  			[in] INT_PTR data, 
+	  			[in] int size,
+	  			[in] INT_PTR processedSize);
+		/*
+		 	if size != 0, return_value = S_OK and (*processedSize == 0),
+		      then there are no more bytes in stream.
+		    if (size > 0) && there are bytes in stream,
+		    this function must read at least 1 byte.
+		    This function is allowed to read less than number of remaining bytes in stream.
+		    You must call Read function in loop, if you need exact amount of data
+		*/
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300020000),
+      version(1.0),
+    ]
+    interface IVszSequentialOutStream : IUnknown {
+	    HRESULT Write(
+	    		[in] INT_PTR data, 
+	    		[in] int size, 
+	    		[in] INT_PTR processedSize);
+	    /*
+		    if (size > 0) this function must write at least 1 byte.
+		    This function is allowed to write less than "size".
+		    You must call Write function in loop, if you need to write exact amount of data
+	    */
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300030000),
+      version(1.0),
+    ]
+    interface IVszInStream : IUnknown {
+	  	HRESULT Read(
+	  			[in] INT_PTR data, 
+	  			[in] int size,
+	  			[in] INT_PTR processedSize);
+
+	    HRESULT Seek(
+	    		[in] CURRENCY offset,
+	    		[in] int seekOrigin,
+	    		[in] INT_PTR newPosition);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300040000),
+      version(1.0),
+    ]
+    interface IVszOutStream : IUnknown {
+	    HRESULT Write(
+	    		[in] INT_PTR data,
+	    		[in] int size,
+	    		[in] INT_PTR processedSize);
+	    HRESULT Seek(
+	    		[in] CURRENCY offset,
+	    		[in] int seekOrigin,
+	    		[in] INT_PTR newPosition);
+	    HRESULT SetSize([in] CURRENCY newSize);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300060000),
+      version(1.0),
+    ]
+    interface IVszStreamGetSize : IUnknown {
+	    HRESULT GetSize([in] INT_PTR size);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000300070000),
+      version(1.0),
+    ]
+    interface IVszOutStreamFlush : IUnknown {
+	    HRESULT Flush();
+	}
+
+	//******************************************************************************
+	// IArchive.h
+	//******************************************************************************
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600100000),
+      version(1.0),
+    ]
+    interface IVszArchiveOpenCallback : IUnknown {
+	    HRESULT SetTotal(
+	    		[in] INT_PTR files,
+	    		[in] INT_PTR bytes);
+	    HRESULT SetCompleted(
+	    		[in] INT_PTR files,
+	    		[in] INT_PTR bytes);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600200000),
+      version(1.0),
+    ]
+    interface IVszArchiveExtractCallback : IUnknown {
+		HRESULT SetTotal([in] CURRENCY total);
+		HRESULT SetCompleted([in] INT_PTR completeValue);
+		[helpstring("OUT: S_OK - OK, S_FALSE - skip this file")]
+	    HRESULT GetStream(
+	    		[in] int index,
+	    		[in, out] IVszSequentialOutStream **outStream,
+	        	[in] VszAskMode askExtractMode);
+	    // GetStream OUT: S_OK - OK, S_FALSE - skeep this file
+	    HRESULT PrepareOperation([in] VszAskMode askExtractMode);
+	    HRESULT SetOperationResult([in] VszExtOperationResult result);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600300000),
+      version(1.0),
+    ]
+    interface IVszArchiveOpenVolumeCallback : IUnknown {
+	    HRESULT GetProperty(
+	    		[in] VszItemPropID propID,
+	    		[out, retval] VARIANT *value);
+	    HRESULT GetStream(
+	    		[in] INT_PTR name,
+	    		[in, out] IVszInStream **inStream);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600400000),
+      version(1.0),
+    ]
+    interface IVszInArchiveGetStream : IUnknown {
+	    HRESULT GetStream(
+	    		[in] int index,
+	    		[in, out] IVszSequentialInStream **stream);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600500000),
+      version(1.0),
+    ]
+    interface IVszArchiveOpenSetSubArchiveName : IUnknown {
+	    HRESULT SetSubArchiveName([in] LPSTR name);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600600000),
+      version(1.0),
+    ]
+    interface IVszInArchive : IUnknown {
+	    HRESULT Open(
+	    		[in] IVszInStream *stream,
+	    		[in] CURRENCY *maxCheckStartPosition,
+	        	[in] IVszArchiveOpenCallback *openArchiveCallback);
+	    HRESULT Close();
+	    HRESULT GetNumberOfItems(
+	    		[out, retval] int *numItems);
+	    HRESULT GetProperty(
+	    		[in] int index,
+	    		[in] VszItemPropID propID,
+	    		[out, retval] VARIANT *value);
+	    HRESULT Extract(
+	    		[in] void *indicesIntArray,
+	    		[in] int numItems,
+	        	[in] int testMode,
+	        	[in] IVszArchiveExtractCallback *extractCallback);
+	    // indices must be sorted
+	    // numItems = 0xFFFFFFFF means all files
+	    // testMode != 0 means "test files operation"
+	
+	    HRESULT GetArchiveProperty(
+	    		[in] VszArchivePropID propID,
+	    		[out, retval] VARIANT *value);
+	    HRESULT GetNumberOfProperties(
+	    		[out, retval] int *numProperties);
+	    HRESULT GetPropertyInfo(
+	    		[in] int index,
+	        	[out] BSTR *retName,
+	        	[out] VszItemPropID *retPropID,
+	        	[out] VBVARTYPE *retVarType);
+	    HRESULT GetNumberOfArchiveProperties([out, retval] int *numProperties);
+	    HRESULT GetArchivePropertyInfo(
+	    		[in] int index,
+	        	[out] BSTR *retName,
+	        	[out] VszArchivePropID *retPropID,
+	        	[out] VBVARTYPE *retVarType);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600800000),
+      version(1.0),
+    ]
+    interface IVszArchiveUpdateCallback : IUnknown {
+		HRESULT SetTotal(
+				[in] CURRENCY total);
+		HRESULT SetCompleted(
+				[in] INT_PTR completeValue);
+	    HRESULT GetUpdateItemInfo(
+		    	[in] int index,
+		        [in, out] int *newData, 		// 1 - new data, 0 - old data
+		        [in, out] int *newProperties, 	// 1 - new properties, 0 - old properties
+		        [in, out] int *indexInArchive);	// -1 if there is no in archive, or if doesn't matter
+	    HRESULT GetProperty(
+		    	[in] int index,
+		    	[in] VszItemPropID propID,
+		    	[out, retval] VARIANT *value);
+	    HRESULT GetStream(
+		    	[in] int index,
+		    	[in, out] IVszSequentialInStream **inStream);
+	    HRESULT SetOperationResult(
+	    		[in] int operationResult);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600820000),
+      version(1.0),
+    ]
+    interface IVszArchiveUpdateCallback2 : IUnknown {
+		HRESULT SetTotal(
+				[in] CURRENCY total);
+		HRESULT SetCompleted(
+				[in] INT_PTR completeValue);
+	    HRESULT GetUpdateItemInfo(
+		    	[in] int index,
+		        [in, out] int *newData,			// 1 - new data, 0 - old data
+		        [in, out] int *newProperties,	// 1 - new properties, 0 - old properties
+		        [in, out] int *indexInArchive);	// -1 if there is no in archive, or if doesn't matter
+	    HRESULT GetProperty(
+		    	[in] int index,
+		    	[in] VszItemPropID propID,
+		    	[out, retval] VARIANT *value);
+	    HRESULT GetStream(
+		    	[in] int index,
+		    	[in, out] IVszSequentialInStream **inStream);
+	    HRESULT SetOperationResult(
+	    		[in] int operationResult);
+	    HRESULT GetVolumeSize(
+		    	[in] int index,
+		    	[out, retval] CURRENCY *size);
+	    HRESULT GetVolumeStream(
+		    	[in] int index,
+		    	[out, retval] IVszSequentialOutStream **volumeStream);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600A00000),
+      version(1.0),
+    ]
+    interface IVszOutArchive : IUnknown {
+	    HRESULT UpdateItems(
+		    	[in] IVszSequentialOutStream *outStream,
+		    	[in] int numItems,
+		      	[in] IVszArchiveUpdateCallback *updateCallback);
+	    HRESULT GetFileTimeType(
+	    		[out, retval] VszFileTimeType *type);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000600030000),
+      version(1.0),
+    ]
+    interface IVszSetProperties : IUnknown {
+	    HRESULT SetProperties(
+		    	[in] void *namesLpstrArray,
+		    	[in] void *valuesVariantArray,
+		    	[in] int numProperties);
+	}
+
+	//******************************************************************************
+	// ICoder.h
+	//******************************************************************************
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400040000),
+      version(1.0),
+    ]
+    interface IVszCompressProgressInfo : IUnknown {
+	    HRESULT SetRatioInfo(
+	    		[in] INT_PTR inSize,
+	    		[in] INT_PTR outSize);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400050000),
+      version(1.0),
+    ]
+    interface IVszCompressCoder : IUnknown {
+	  	HRESULT Code(
+	  			[in] IVszSequentialInStream *inStream,
+	  			[in] IVszSequentialInStream *outStream,
+	      		[in] INT_PTR inSize,
+	      		[in] INT_PTR outSize,
+	      		[in] IVszCompressProgressInfo *progress);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400180000),
+      version(1.0),
+    ]
+    interface IVszCompressCoder2 : IUnknown {
+	  	HRESULT Code(
+		  		[in] void *inStreamsSequentialInStreamArray,
+		      	[in] void *inSizesPtrCurrencyArray,
+		      	[in] int numInStreams,
+		      	[in] void *outStreamsSequentialOutStreamArray,
+		      	[in] void *outSizesPtrCurrencyArray,
+		      	[in] int numOutStreams,
+		      	[in] IVszCompressProgressInfo *progress);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400200000),
+      version(1.0),
+    ]
+    interface IVszCompressSetCoderProperties : IUnknown {
+	    HRESULT SetCoderProperties(
+		    	[in] void *propIDsCoderPropIDArray,
+		      	[in] void *propertiesVariantArray,
+		      	[in] int numProperties);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400220000),
+      version(1.0),
+    ]
+    interface IVszCompressSetDecoderProperties2 : IUnknown {
+	    HRESULT SetDecoderProperties2(
+	    		[in] void *data,
+	    		[in] int size);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400230000),
+      version(1.0),
+    ]
+    interface IVszCompressWriteCoderProperties : IUnknown {
+	    HRESULT WriteCoderProperties(
+	    		[in] IVszSequentialOutStream *outStreams);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400240000),
+      version(1.0),
+    ]
+    interface IVszCompressGetInStreamProcessedSize : IUnknown {
+	    HRESULT GetInStreamProcessedSize(
+	    		[out, retval] CURRENCY *value);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400250000),
+      version(1.0),
+    ]
+    interface IVszCompressSetCoderMt : IUnknown {
+	    HRESULT SetNumberOfThreads(
+	    		[in] int numThreads);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400300000),
+      version(1.0),
+    ]
+    interface IVszCompressGetSubStreamSize : IUnknown {
+	    HRESULT GetSubStreamSize(
+	    		[in] CURRENCY subStream,
+	    		[out, retval] CURRENCY *value);
+	}
+
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400310000),
+      version(1.0),
+    ]
+    interface IVszCompressSetInStream : IUnknown {
+	    HRESULT SetInStream(
+	    		[in] IVszSequentialInStream *inStream);
+	    HRESULT ReleaseInStream();
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400320000),
+      version(1.0),
+    ]
+    interface IVszCompressSetOutStream : IUnknown {
+	    HRESULT SetOutStream(
+	    		[in] IVszSequentialOutStream *outStream);
+	    HRESULT ReleaseOutStream();
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400330000),
+      version(1.0),
+    ]
+    interface IVszCompressSetInStreamSize : IUnknown {
+	    HRESULT SetInStreamSize(
+	    		[in] CURRENCY *inSize);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400340000),
+      version(1.0),
+    ]
+    interface IVszCompressSetOutStreamSize : IUnknown {
+	    HRESULT SetOutStreamSize(
+	    		[in] CURRENCY *outSize);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400400000),
+      version(1.0),
+    ]
+    interface IVszCompressFilter : IUnknown {
+	    HRESULT Init();
+	    int Filter(
+	    		[in] void *data,
+	    		[in] int size);
+	    // Filter return outSize (Cardinal)
+	    // if (outSize <= size): Filter have converted outSize bytes
+	    // if (outSize > size): Filter have not converted anything.
+	    //      and it needs at least outSize bytes to convert one block
+	    //      (it's for crypto block algorithms).
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400800000),
+      version(1.0),
+    ]
+    interface IVszCryptoProperties : IUnknown {
+	    HRESULT SetKey(
+	    		[in] void *data,
+	    		[in] int size);
+	    HRESULT SetInitVector(
+	    		[in] void *data,
+	    		[in] int size);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400900000),
+      version(1.0),
+    ]
+    interface IVszCryptoSetPassword : IUnknown {
+	    HRESULT CryptoSetPassword(
+	    		[in] void *data,
+	    		[in] int size);
+	}
+	
+	[
+      odl,
+      uuid(23170F69-40C1-278A-0000-000400A00000),
+      version(1.0),
+    ]
+    interface IVszCryptoSetCRC : IUnknown {
+	    HRESULT CryptoSetCRC(
+	    		[in] int crc);
+	}
+	
+    [dllname("OLE32")]
+    module Ole32
+    {
+		[entry("CoInitialize")]
+		long CoInitialize([in] long pvReserved);
+		[entry("CoUninitialize")]
+		long CoUninitialize();
+        [entry("CoCreateInstance")]
+        long CoCreateInstance(
+                        [in] VszGUID* CLSID, 
+                        [in] IUnknown* pUnkOuter, 
+                        [in] VszCLSCTX dwClsContext, 
+                        [in] VszGUID* riid, 
+                        [out] IUnknown** pvObj);
+		[entry("CLSIDFromProgID")]
+        HRESULT CLSIDFromProgID(
+                        [in] LPWSTR lpszProgID, 
+                        [out, retval] VszGUID* lpclsid);
+        [entry("IIDFromString")]
+        HRESULT VszGUIDFromString (
+                        [in] BSTR lpszGUID, 
+                        [out, retval] VszGUID *pGUID);
+		[entry("StringFromIID")]
+        HRESULT VszStringFromGUID (
+                        [in] void *pGUID, 
+                        [out, retval] long *lplpsz);
+        [entry("CoMarshalInterThreadInterfaceInStream")]
+        HRESULT CoMarshalInterThreadInterfaceInStream(
+                        [in] VszGUID* riid, 
+                        [in] IUnknown* pUnk, 
+                        [out, retval] long* ppStm);
+        [entry("CoGetInterfaceAndReleaseStream")]
+        HRESULT CoGetInterfaceAndReleaseStream(
+                        [in] long pStm, 
+                        [in] VszGUID* riid, 
+                        [out, retval] IUnknown** ppUnk);
+        [entry("CoUnmarshalInterface")]
+        HRESULT CoUnmarshalInterface(
+                        [in] long pStm, 
+                        [in] VszGUID* riid, 
+                        [out, retval] IUnknown** ppUnk);
+		[entry("CoTaskMemFree")]
+		void CoTaskMemFree([in] long pv);
+	}
+	
+	[dllname("OLEAUT32")]
+	module OleAut32
+	{
+		[entry("SysAllocString")]
+		BSTR SysAllocString([in] long lpStr);
+	};
+		
+	[dllname("KERNEL32")]
+	module Kernel32
+	{
+		[entry("GetCurrentThreadId")]
+		UINT GetCurrentThreadId();
+		[entry("GetModuleHandleA")]
+		DWORD GetModuleHandle([in] LPSTR lpModuleName);
+		[entry("GetProcAddress")]
+		DWORD GetProcAddress([in] DWORD hModule, [in] LPSTR lpProcName);
+		[entry("RtlMoveMemory")]
+		DWORD RtlMoveMemory([in] void *Destination, [in] void *Source, [in] DWORD Length);
+		[entry("TlsGetValue")]
+		UINT TlsGetValue([in] DWORD dwTlsIndex);
+		[entry("OutputDebugStringA")]
+		void APIOutputDebugString([in] LPSTR lpOutputString);
+	}
+
+    [dllname("7za.dll")]
+    module VszDll
+    {
+/*    	[entry("CreateObject")]
+    	HRESULT VszCreateObject(
+    			[in] VszGUID *clsid,
+    			[in] VszGUID *iid,
+    			[out, retval] IUnknown **pUnk);
+		[entry("GetNumberOfMethods")]
+		HRESULT VszGetNumberOfMethods(
+				[out, retval] int *numMethods);
+		[entry("GetMethodProperty")]
+		HRESULT VszGetMethodProperty(
+				[in] int index, 
+				[in] VszMethodPropID propID,
+				[out, retval] VARIANT *value);
+		[entry("GetNumberOfFormats")]
+		HRESULT VszGetNumberOfFormats(
+				[out, retval] int *numFormats);
+		[entry("GetHandlerProperty")]
+		HRESULT VszGetHandlerProperty(
+				[in] VszArchivePropID propID,
+				[out, retval] VARIANT *value);
+		[entry("GetHandlerProperty2")]
+		HRESULT VszGetHandlerProperty2(
+				[in] int index, 
+				[in] VszArchivePropID propID,
+				[out, retval] VARIANT *value);
+		[entry("SetLargePageMode")]
+		HRESULT VszSetLargePageMode();
+
+		const LPSTR CLSID_CFormatZip      = "{23170F69-40C1-278A-1000-000110010000}"; // zip jar xpi
+		const LPSTR CLSID_CFormatBZ2      = "{23170F69-40C1-278A-1000-000110020000}"; // bz2 bzip2 tbz2 tbz
+		const LPSTR CLSID_CFormatRar      = "{23170F69-40C1-278A-1000-000110030000}"; // rar r00
+		const LPSTR CLSID_CFormatArj      = "{23170F69-40C1-278A-1000-000110040000}"; // arj
+		const LPSTR CLSID_CFormatZ        = "{23170F69-40C1-278A-1000-000110050000}"; // z taz
+		const LPSTR CLSID_CFormatLzh      = "{23170F69-40C1-278A-1000-000110060000}"; // lzh lha
+		const LPSTR CLSID_CFormat7z       = "{23170F69-40C1-278A-1000-000110070000}"; // 7z
+		const LPSTR CLSID_CFormatCab      = "{23170F69-40C1-278A-1000-000110080000}"; // cab
+		const LPSTR CLSID_CFormatNsis     = "{23170F69-40C1-278A-1000-000110090000}";
+		const LPSTR CLSID_CFormatLzma     = "{23170F69-40C1-278A-1000-0001100A0000}"; // lzma lzma86
+		const LPSTR CLSID_CFormatPe       = "{23170F69-40C1-278A-1000-000110DD0000}";
+		const LPSTR CLSID_CFormatElf      = "{23170F69-40C1-278A-1000-000110DE0000}";
+		const LPSTR CLSID_CFormatMacho    = "{23170F69-40C1-278A-1000-000110DF0000}";
+		const LPSTR CLSID_CFormatUdf      = "{23170F69-40C1-278A-1000-000110E00000}"; // iso
+		const LPSTR CLSID_CFormatXar      = "{23170F69-40C1-278A-1000-000110E10000}"; // xar
+		const LPSTR CLSID_CFormatMub      = "{23170F69-40C1-278A-1000-000110E20000}";
+		const LPSTR CLSID_CFormatHfs      = "{23170F69-40C1-278A-1000-000110E30000}";
+		const LPSTR CLSID_CFormatDmg      = "{23170F69-40C1-278A-1000-000110E40000}"; // dmg
+		const LPSTR CLSID_CFormatCompound = "{23170F69-40C1-278A-1000-000110E50000}"; // msi doc xls ppt
+		const LPSTR CLSID_CFormatWim      = "{23170F69-40C1-278A-1000-000110E60000}"; // wim swm
+		const LPSTR CLSID_CFormatIso      = "{23170F69-40C1-278A-1000-000110E70000}"; // iso
+		const LPSTR CLSID_CFormatBkf      = "{23170F69-40C1-278A-1000-000110E80000}";
+		const LPSTR CLSID_CFormatChm      = "{23170F69-40C1-278A-1000-000110E90000}"; // chm chi chq chw hxs hxi hxr hxq hxw lit
+		const LPSTR CLSID_CFormatSplit    = "{23170F69-40C1-278A-1000-000110EA0000}"; // 001
+		const LPSTR CLSID_CFormatRpm      = "{23170F69-40C1-278A-1000-000110EB0000}"; // rpm
+		const LPSTR CLSID_CFormatDeb      = "{23170F69-40C1-278A-1000-000110EC0000}"; // deb
+		const LPSTR CLSID_CFormatCpio     = "{23170F69-40C1-278A-1000-000110ED0000}"; // cpio
+		const LPSTR CLSID_CFormatTar      = "{23170F69-40C1-278A-1000-000110EE0000}"; // tar
+		const LPSTR CLSID_CFormatGZip     = "{23170F69-40C1-278A-1000-000110EF0000}"; // gz gzip tgz tpz 
+*/
+		const LPSTR IID_IUnknown = "{00000000-0000-0000-C000-000000000046}";
+		const LPSTR IID_IInArchive = "{23170F69-40C1-278A-0000-000600600000}";
+		const LPSTR IID_IOutArchive = "{23170F69-40C1-278A-0000-000600A00000}";
+	}
+}
