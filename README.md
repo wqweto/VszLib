@@ -1,6 +1,7 @@
-## VszLib
+## VszLib 
+(Vsz = Vb Seven Zip)
 
-7-zip SDK supports several compression methods that can produce and read 7z, zip, gzip, tar, bzip2 and other archives. This is a VB6 helper component that makes using original 7z.dll in your VB6 projects possible. 
+7-zip SDK supports several compression methods that can produce and read 7z, zip, gzip, tar, bzip2 and other archives. This is a VB6 helper component that makes using original `7z.dll` in your VB6 projects possible. 
 
 ### Simple compress
 
@@ -80,7 +81,7 @@ Returns an array with information about a file entry. Array indexes are: 0 - fil
 
 #### `AddFile(File As String, [Name As String], [Comment As String]) As Boolean`
 
-Adds a file to archive. `File` must be an (absolute) path to an existing file. Optional `Name` can specify name and relative folder in the archive the entry is going to be stored to. If not specified filename portion of `File` is used as name in the root folder of the archive. `Comment` is optional and (probably) not supported by all compressors.
+Adds a file to archive. `File` must be an (absolute) path to an existing file. Optional `Name` can specify name and relative folder in the archive the entry is going to be stored to. If `Name` not specified, filename portion of `File` is used as name in the root folder of the archive. `Comment` is optional and (probably) not supported by all compressors.
 
 #### `CompressArchive(ArchiveFile As String) As Boolean`
 
