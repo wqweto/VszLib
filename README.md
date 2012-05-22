@@ -60,7 +60,7 @@ The only publicly accessible class in the library is `cVszArchive`. Here is a sh
 
 Optionally used to indicate `7z.dll` location. If `DllFile` is empty first `7z.dll` is loaded from `VszLib.dll` folder, then registry is inspected for 7-zip setup folder, finally lightweight `7za.dll` is attempt loaded from `VszLib.dll` folder. Best practice is to place `7z.dll` next to `VszLib.dll` and to not call `Init` explicitly from client code. Extract/compress operation will call it if needed.
 
-Note that `7za.dll` (from [7-zip extras](http://sourceforge.net/projects/sevenzip/files/7-Zip/9.22/7z922_extra.7z/download)) can be using to compress/extract only 7z archives (no zip support). Even smaller `7zxa.dll` (172KB) can be used to only extract 7z archives.
+Note that `7za.dll` (from [7-zip extras](http://sourceforge.net/projects/sevenzip/files/7-Zip/9.22/7z922_extra.7z/download)) can be used to compress/extract only 7z archives (no zip support). The even smaller `7zxa.dll` (172KB) can be used to only extract 7z archives.
 
 #### `OpenArchive(ArchiveFile As String) As Boolean`
 
@@ -68,24 +68,23 @@ Opens the archive using file extension to guess decompressor type. Populates `Fi
 
 #### `Extract(TargetFolder As String, [Filter]) As Boolean`
 
-Extracts files from `OpenArchive`d archive file to target folder. Optional `Filter` can be a file mask or an array of booleans each index indicating whether to decompress file (`Filter(idx) = True`) or to skip it (`Filter(idx) = False`). Raises `Progress` event to indicate progress and to allow cancellation of the extraction.
+Extracts files to `TargetFolder` from a previously opened archive file. Optional `Filter` can specify which file entries to extract by using exact match file name (`document.txt`), a filename mask (*.exe) or an array of `FileCount` booleans, each index indicating whether to decompress the file with same index (array entry set to `True`) or to skip it (array entry set to `False`). Raises `Progress` event to indicate progress and to allow cancellation of the extraction.
 
 #### `Property FileCount As Long` (read-only)
 
-Returns number of files in archive
+Returns number of file entries in the archive
 
 #### `Property FileInfo(FileIdx As Long)` (read-only)
 
-Returns an array with information about file entry which contains these indexes: 0 - file name, 1 - attributes, 2 - size, 3 -  bool if encrypted, 4 - CRC, 5 - file comment, 6 - creation time, 7 - last access time, 8 - last write time. Some of these can be empty if not supported by archive format.
+Returns an array with information about a file entry. Array indexes are: 0 - file name, 1 - attributes, 2 - size, 3 - bool if encrypted, 4 - CRC, 5 - file comment, 6 - creation time, 7 - last access time, 8 - last write time. Some of the entries can be `Empty` if not supported by the current archive format.
 
 #### `AddFile(File As String, [Name As String], [Comment As String]) As Boolean`
 
-Adds a file to archive. `File` must be an existing file. `Name` can specify name and relative folder in the archive. If not specified filename portion of `File` is used as name in archive. `Comment` is optional and (probably) not supported by all compressors.
+Adds a file to archive. `File` must be an (absolute) path to an existing file. Optional `Name` can specify name and relative folder in the archive the entry is going to be stored to. If not specified filename portion of `File` is used as name in the root folder of the archive. `Comment` is optional and (probably) not supported by all compressors.
 
 #### `CompressArchive(ArchiveFile As String) As Boolean`
 
-Creates an archive using previously `AddFile`ed files. Compressor type is guessed by archive file extension. Raises `Progress` event to indicate progress and to allow cancellation of the compression.
-
+Creates an archive using previously added files. Compressor type is guessed by archive file extension. Raises `Progress` event to indicate progress and to allow cancellation of the compression.
 
 #### `Property Parameter(ParamName As String) As Variant` (read/write)
 
@@ -109,20 +108,20 @@ Gets number of formats supported by `7z.dll` which has been loaded on `Init`.
 
 #### `Property FormatInfo(FormatIdx As Long) As Variant` (read-only)
 
-Returns an array with information about particular format which contains these indexes: 0 - name, 1 - class ID, 2 - extensions, 3 - additional extensions, 4 - bool if update supported, 5 - bool if to keep names, 6 - byte array with start signature and 7 - byte array with finish signature.
+Returns an array with information about compression format. Array indexes are: 0 - name, 1 - class ID, 2 - file extension(s), 3 - additional extensions (if any), 4 - bool if update supported, 5 - bool if keeps names, 6 - byte array with archive start signature, 7 - byte array with archive finish signature.
 
 #### `Property LastError As String` (read-only)
 
-Gets last error (if any) that occurred during last operation.
+Gets last error that occurred during last operation. Returns empty straint if no error occurred.
 
 #### `Event Progress(FileIdx As Long, Current As Double, Total As Double, Cancel As Boolean)`
 
-Raised when current operation needs to update UI with information about progress. `FileIdx` is the index of the current file being extracted/compressed. This index can be used with `FileInfo` property. `Current` and `Total` parameters can be using to calculate percentage completed. `Cancel` can be set to abort current operation. 
+Raised when new information about current operation progress is available and to give the user a chance to cancel operation. `FileIdx` is the index of the current file being extracted/compressed. This index can be used with `FileInfo` property. `Current` and `Total` parameters can be using to calculate percentage completed. `Cancel` can be set to abort current operation. 
 
 #### `Event Error(Description As String, Source As String, Cancel As Boolean)`
 
-Raised when an unexpected condition occurs during operation. `Description` contains *User cancelled* when `Cancel` gets set in `Progress` event. `Description` contains *Data Error. Wrong password?* if wrong password is used on extraction. Can be raised when input/output files are inaccessible (permissions, network outages). Setting `Cancel` indicates whether to finish operation or abort it immediately.
+Raised when an unexpected condition occurs during current operation. `Description` contains *User cancelled* when `Cancel` gets set in `Progress` event. `Description` contains *Data Error. Wrong password?* if wrong password is supplied for extraction of encrypted archives. Can be raised when input/output files are inaccessible (permissions, network outages). Setting `Cancel` indicates whether to finish operation or abort it immediately.
 
 #### `Event NewVolume(FileName As String)`
 
-Raised when creating multi-volume archives to indicate file names used during compression. Useful if volumes are to be deleted on error or user cancellation.
+Raised when creating multi-volume archives to indicate new file names that are created during compression. Useful if volumes are to be deleted on error or user cancellation.
