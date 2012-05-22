@@ -1,7 +1,7 @@
 ## VszLib 
 (Vsz = Vb Seven Zip)
 
-7-zip SDK supports several compression methods that can produce and read 7z, zip, gzip, tar, bzip2 and other archives. This is a VB6 helper component that makes using original `7z.dll` in your VB6 projects possible. 
+[7-zip SDK](http://www.7-zip.org/sdk.html) supports several compression methods that can produce and read 7z, zip, gzip, tar, bzip2 and other archives. This is a VB6 helper component that makes using original `7z.dll` in your VB6 projects possible. 
 
 ### Simple compress
 
@@ -65,11 +65,11 @@ Note that `7za.dll` (from [7-zip extras](http://sourceforge.net/projects/sevenzi
 
 #### `OpenArchive(ArchiveFile As String) As Boolean`
 
-Opens the archive using file extension to guess decompressor type. Populates `FileCount` and `FileInfo` properties.
+Opens the archive using archive file extension to guess decompressor type. Currently supported file extension for update: 7z, zip, tar, bz2, gz, xz, wim. Other formats supported: rar, cab, chm, iso, msi, hfs, iso, arj, cpio, deb, dmg, fat, flv, lzh, lzma, lzma86, mbr, ntfs, exe, pmd, rpm, 001, swf, vhd, xar, z. Populates `FileCount` and `FileInfo` properties. 
 
 #### `Extract(TargetFolder As String, [Filter]) As Boolean`
 
-Extracts files to `TargetFolder` from a previously opened archive file. Optional `Filter` can specify which file entries to extract by using exact match file name (`document.txt`), a filename mask (*.exe) or an array of `FileCount` booleans, each index indicating whether to decompress the file with same index (array entry set to `True`) or to skip it (array entry set to `False`). Raises `Progress` event to indicate progress and to allow cancellation of the extraction.
+Extracts files to `TargetFolder` from a previously opened archive file. Optional `Filter` can specify which file entries to extract by exact match (`document.txt`), a filename mask (`*.exe`) or an array of `FileCount` booleans, each index indicating whether to decompress the file with same index (array entry set to `True`) or to skip it (array entry set to `False`). Raises `Progress` event to indicate progress and to allow cancellation of the extraction.
 
 #### `Property FileCount As Long` (read-only)
 
@@ -101,7 +101,7 @@ Gets/sets password used during extraction/compression. If incorrect archive pass
 
 #### `Property VolumeSize As Double` (read/write)
 
-Gets/sets volume size in bytes during compression. Can be used with 7z archives only. For other formats just splits output archive in equally sized chunks.
+Gets/sets volume size in bytes for split volumes to be created during compression. Can be used with 7z archives only. For other formats splits output archive in `VolumeSize` sized chunks which is not supported model by native decompressors.
 
 #### `Property FormatCount As Long` (read-only)
 
