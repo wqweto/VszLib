@@ -268,6 +268,12 @@ Property Get FileInfo(ByVal FileIdx As Long) As Variant
 End Property
 
 Property Get FormatCount() As Long
+    If m_hLibrary = 0 Then
+        If Not Init() Then
+            Err.Raise vbObjectError + 1, , ERR_LIBRARY
+            Exit Property
+        End If
+    End If
     FormatCount = VszGetNumberOfFormats()
 End Property
 
@@ -275,6 +281,12 @@ Property Get FormatInfo(ByVal FormatIdx As Long) As Variant
     Dim sClassID        As String
     Dim lPtr            As Long
     
+    If m_hLibrary = 0 Then
+        If Not Init() Then
+            Err.Raise vbObjectError + 1, , ERR_LIBRARY
+            Exit Property
+        End If
+    End If
     If FormatIdx >= 0 And FormatIdx < VszGetNumberOfFormats() Then
         lPtr = VszStringFromGUID(ByVal StrPtr(VszGetHandlerProperty2(FormatIdx, VszArchivePropID.vszClassID)))
         sClassID = SysAllocString(lPtr)
@@ -288,10 +300,6 @@ Property Get FormatInfo(ByVal FormatIdx As Long) As Variant
             StrConv(VszGetHandlerProperty2(FormatIdx, VszArchivePropID.vszStartSignature), vbUnicode), _
             StrConv(VszGetHandlerProperty2(FormatIdx, VszArchivePropID.vszFinishSignature), vbUnicode))
     End If
-End Property
-
-Property Get ArchiveFormat() As String
-
 End Property
 
 Public Property Get Parameter(ParamName As String) As Variant
