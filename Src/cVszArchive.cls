@@ -37,6 +37,7 @@ Implements IVszCryptoGetTextPassword2
 Event Progress(ByVal FileIdx As Long, ByVal Current As Double, ByVal Total As Double, Cancel As Boolean)
 Event Error(Description As String, Source As String, Cancel As Boolean)
 Event NewVolume(FileName As String)
+Event BeforeExtract(ByVal FileIdx As Long, FileName As String, SkipFile As Boolean, Cancel As Boolean)
 
 '=========================================================================
 ' API
@@ -162,6 +163,7 @@ Private m_oCacheStream      As cVszStream '--- used only in IDE
 Private m_uThreadEvent      As VszThreadEventData
 Private m_cCustomParams     As Collection
 Private m_dblVolumeSize     As Double
+Private m_bDirStructure     As Boolean
 
 Private Type VszFileInfo
     FileName        As String
@@ -196,6 +198,7 @@ Private Enum VszThreadEventTypeEnum
     vszEvtProgess = 1
     vszEvtError
     vszEvtNewVolume
+    vszEvtBeforeExtract
 End Enum
 
 Private Type VszThreadEventData
@@ -209,6 +212,7 @@ Private Type VszThreadEventData
     Description     As String
     Source          As String
     FileName        As String
+    SkipFile        As Boolean
     Cancel          As Boolean
 End Type
 
@@ -334,6 +338,14 @@ EH:
     End If
 End Property
 
+Property Get PreserveDirectoryStructure() As Boolean
+    PreserveDirectoryStructure = m_bDirStructure
+End Property
+
+Property Let PreserveDirectoryStructure(ByVal bValue As Boolean)
+    m_bDirStructure = bValue
+End Property
+
 '=========================================================================
 ' Methods
 '=========================================================================
@@ -395,7 +407,7 @@ Public Function OpenArchive(ArchiveFile As String) As Boolean
     m_oInArchive.Open m_oInStream, MAX_CHECK_POSITION, Me
     On Error GoTo EH
     '--- check if open succeeded
-    If m_oInArchive.GetNumberOfArchiveProperties() <> 0 Then
+    If m_oInArchive.GetNumberOfArchiveProperties() <> 0 Or m_oInArchive.GetNumberOfItems() Then
         m_bSolid = m_oInArchive.GetArchiveProperty(vszSolid)
         m_lCount = m_oInArchive.GetNumberOfItems()
         ReDim m_uFiles(0 To m_lCount) '--- last one empty
@@ -497,7 +509,7 @@ Public Function Extract( _
         Else
             Extract = pvWaitThread(pvThreadCall(pfnInExtract, lInThis, VarPtr(aIndexes(0)), lIndexCount, 0, ObjPtr(pExtractCallback)))
         End If
-    Else
+    ElseIf m_lCount > 0 Then
         For lIdx = 0 To m_lCount - 1
             lOffset = lOffset + m_uFiles(lIdx).Size
             m_uFiles(lIdx).Offset = lOffset
@@ -906,6 +918,9 @@ Private Function pvWaitThread(ByVal hThread As Long) As Boolean
                 Case vszEvtNewVolume
                     RaiseEvent NewVolume(.FileName)
                     Call SetEvent(.hCompleteEvent)
+                Case vszEvtBeforeExtract
+                    RaiseEvent BeforeExtract(.FileIdx, .FileName, .SkipFile, .Cancel)
+                    Call SetEvent(.hCompleteEvent)
                 End Select
             End With
         Else
@@ -975,6 +990,28 @@ Private Function pvFireError(Description As String, Source As String, Cancel As 
     pvFireError = Cancel
 End Function
 
+Private Function pvFireBeforeExtract(ByVal FileIdx As Long, FileName As String, SkipFile As Boolean, Cancel As Boolean) As Boolean
+    If m_lThreadID = GetCurrentThreadId() Then
+        RaiseEvent BeforeExtract(FileIdx, FileName, SkipFile, Cancel)
+    Else
+        With m_uThreadEvent
+            Call EnterCriticalSection(.hLock)
+            .EventType = vszEvtBeforeExtract
+            .FileIdx = FileIdx
+            .FileName = FileName
+            .SkipFile = SkipFile
+            .Cancel = Cancel
+            Call SetEvent(.hFireEvent)
+            Call WaitForMultipleObjects(1, .hCompleteEvent, 0, INFINITE)
+            FileName = .FileName
+            SkipFile = .SkipFile
+            Cancel = .Cancel
+            Call LeaveCriticalSection(.hLock)
+        End With
+    End If
+    pvFireBeforeExtract = Cancel
+End Function
+
 Private Sub m_oOutStream_NotifyNewStream(FileName As String)
     If m_lThreadID = GetCurrentThreadId() Then
         RaiseEvent NewVolume(FileName)
@@ -996,6 +1033,7 @@ End Sub
 
 Private Sub Class_Initialize()
     m_lThreadID = GetCurrentThreadId()
+    m_bDirStructure = True
 End Sub
 
 Private Sub Class_Terminate()
@@ -1095,6 +1133,7 @@ End Sub
 Private Sub IVszArchiveExtractCallback_GetStream(ByVal index As Long, outStream As IVszSequentialOutStream, ByVal askExtractMode As VbSevenZip.VszAskMode)
     Const FUNC_NAME     As String = "IVszArchiveExtractCallback_GetStream"
     Dim sOutFile        As String
+    Dim bSkipFile       As Boolean
 
     pvInitVbRuntime
     On Error GoTo EH
@@ -1118,19 +1157,32 @@ Private Sub IVszArchiveExtractCallback_GetStream(ByVal index As Long, outStream 
         Else
             sOutFile = m_uFiles(index).FileName
         End If
+        If Not m_bDirStructure Then
+            sOutFile = Mid$(sOutFile, InStrRev(sOutFile, "\") + 1)
+        End If
         If Left$(sOutFile, 1) <> "\" And Mid$(sOutFile, 2, 1) <> ":" Then
             sOutFile = m_sTargetFolder & IIf(Right$(m_sTargetFolder, 1) <> "\", "\", vbNullString) & sOutFile
         End If
-        If (m_uFiles(index).Attributes And vbDirectory) <> 0 Then
-            MkPath sOutFile
-        Else
-            MkPath Left$(sOutFile, InStrRev(sOutFile, "\"))
-            Set outStream = pvInitStream(sOutFile, OutputStream:=True, FileAttributes:=m_uFiles(index).Attributes, DateModified:=m_uFiles(index).LastWriteTime, FileSize:=m_uFiles(index).Size)
-            If outStream Is Nothing Then
+        '--- dont fire BeforeExtract for folders if not preserving directory structure
+        If (m_uFiles(index).Attributes And vbDirectory) = 0 Or m_bDirStructure Then
+            If pvFireBeforeExtract(index, sOutFile, bSkipFile, m_bCancel) Then
                 #If Logging Then
-                    DebugOutput "null stream for " & sOutFile, FUNC_NAME
+                    DebugOutput "before ERR_CANCELLED, index=" & index, FUNC_NAME
                 #End If
-                Set outStream = pvInitStream()
+                On Error GoTo 0
+                Err.Raise vbObjectError + 1, , ERR_CANCELLED
+            End If
+        End If
+        If (m_uFiles(index).Attributes And vbDirectory) <> 0 Then
+            If Not bSkipFile And m_bDirStructure Then
+                MkPath sOutFile
+            End If
+        Else
+            If Not bSkipFile Then
+                MkPath Left$(sOutFile, InStrRev(sOutFile, "\"))
+                Set outStream = pvInitStream(sOutFile, OutputStream:=True, FileAttributes:=m_uFiles(index).Attributes, DateModified:=m_uFiles(index).LastWriteTime, FileSize:=m_uFiles(index).Size)
+            Else
+                Set outStream = Nothing
             End If
         End If
     End If
