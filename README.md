@@ -91,9 +91,9 @@ Creates an archive using previously added files. Compressor type is guessed by a
 
 Specifies custom compression parameters. These correspond to `-m` switch of command line `7z.exe`. 
 Setting compression level switch `-mx3` or `-mx=3` is translated to `Parameter("x") = 3`.
-Setting 7z compression method `-m0=LZMA2` is translated to `Paramter("0") = "LZMA2"`.
-Setting multi-threading switch `-mmt=on` or `-mmt=3` is translated to `Paramter("mt") = "on"` or `Paramter("mt") = 3`.
-Setting encrypt headers switch `-mhe=on` is translated to `Paramter("he") = "on"`. See [more examples of -m switch](http://www.dotnetperls.com/7-zip-examples) for additional info.
+Setting 7z compression method `-m0=LZMA2` is translated to `Parameter("0") = "LZMA2"`.
+Setting multi-threading switch `-mmt=on` or `-mmt=3` is translated to `Parameter("mt") = "on"` or `Parameter("mt") = 3`.
+Setting encrypt headers switch `-mhe=on` is translated to `Parameter("he") = "on"`. See [more examples of -m switch](http://www.dotnetperls.com/7-zip-examples) for additional info.
 
 #### `Property Password As String` (read/write)
 
@@ -113,7 +113,11 @@ Returns an array with information about compression format. Array indexes are: 0
 
 #### `Property LastError As String` (read-only)
 
-Gets last error that occurred during last operation. Returns empty straint if no error occurred.
+Gets last error that occurred during last operation. Returns empty string if no error occurred.
+
+#### `Property PreserveDirectoryStructure As Boolean`
+
+Gets/sets whether to preserve directory structure of archive under `TargetFolder` during extraction.
 
 #### `Event Progress(FileIdx As Long, Current As Double, Total As Double, Cancel As Boolean)`
 
@@ -126,3 +130,7 @@ Raised when an unexpected condition occurs during current operation. `Descriptio
 #### `Event NewVolume(FileName As String)`
 
 Raised when creating multi-volume archives to indicate new file names that are created during compression. Useful if volumes are to be deleted on error or user cancellation.
+
+#### `BeforeExtract(ByVal FileIdx As Long, FileName As String, SkipFile As Boolean, Cancel As Boolean)`
+
+Raised before extracting a file from archive. `FileName` can be used to change target output filename on the fly. `SkipFile` can be used to selectively extract files based on logic that cannot be implemented with `Filter` argument of `Extract` method. `Cancel` can be set to abort further extraction. 
