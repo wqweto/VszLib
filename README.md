@@ -17,10 +17,12 @@
         .Extract "extract_folder"
     End With
 
-### Create zip file
+### Create zip file with unicode filenames
 
     With New cVszArchive
         .AddFile "your_file"
+        '--- store filenames in UTF-8
+        .Parameter("cu") = "on"
         .CompressArchive "archive.zip"
     End With
 
