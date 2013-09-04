@@ -52,7 +52,8 @@ Private Const FILE_CURRENT          As Long = 1
 Private Const FILE_END              As Long = 2
 
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
-Private Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal NoSecurity As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+Private Declare Function CreateFileA Lib "kernel32" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal NoSecurity As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+Private Declare Function CreateFileW Lib "kernel32" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal NoSecurity As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
 Private Declare Function ReadFile Lib "kernel32" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function WriteFile Lib "kernel32" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToWrite As Long, lpNumberOfBytesWritten As Long, ByVal lpOverlapped As Long) As Long
@@ -63,7 +64,8 @@ Private Declare Function FlushFileBuffers Lib "kernel32" (ByVal hFile As Long) A
 Private Declare Function SetFileTime Lib "kernel32" (ByVal hFile As Long, lpCreationTime As FILETIME, lpLastAccessTime As FILETIME, lpLastWriteTime As FILETIME) As Long
 Private Declare Function SystemTimeToFileTime Lib "kernel32" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
 Private Declare Function LocalFileTimeToFileTime Lib "kernel32" (lpLocalFileTime As FILETIME, lpFileTime As FILETIME) As Long
-Private Declare Function SetFileAttributes Lib "kernel32" Alias "SetFileAttributesA" (ByVal lpFileName As String, ByVal dwFileAttributes As Long) As Long
+Private Declare Function SetFileAttributesA Lib "kernel32" (ByVal lpFileName As String, ByVal dwFileAttributes As Long) As Long
+Private Declare Function SetFileAttributesW Lib "kernel32" (ByVal lpFileName As Long, ByVal dwFileAttributes As Long) As Long
 
 Private Type FILETIME
     dwLowDateTime       As Long
@@ -167,15 +169,13 @@ Friend Function frInit( _
         If OutputStream Then
             m_lFileAttributes = FileAttributes
             m_dDateModified = DateModified
-            On Error Resume Next
-            SetAttr sFileName, vbArchive
-            On Error GoTo EH
-            m_hFile = CreateFile(sFileName, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, vbArchive, 0)
+            Call SetFileAttributes(sFileName, vbArchive)
+            m_hFile = CreateFile(sFileName, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, vbArchive)
             If m_hFile <> INVALID_HANDLE_VALUE Then
                 frSetSize FileSize / 10000@
             End If
         Else
-            m_hFile = CreateFile(sFileName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0)
+            m_hFile = CreateFile(sFileName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING)
         End If
         frInit = (m_hFile <> INVALID_HANDLE_VALUE) Or LenB(sFileName) = 0
     End If
@@ -192,10 +192,8 @@ Friend Function frReopen(sFileName As String) As Boolean
     If m_sFileName <> sFileName Then
         pvTerminate
         m_sFileName = sFileName
-        On Error Resume Next
-        SetAttr sFileName, vbArchive
-        On Error GoTo EH
-        m_hFile = CreateFile(sFileName, GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0)
+        Call SetFileAttributes(sFileName, vbArchive)
+        m_hFile = CreateFile(sFileName, GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS)
     End If
     frReopen = (m_hFile <> INVALID_HANDLE_VALUE)
     Exit Function
@@ -460,6 +458,22 @@ Private Sub pvInitVbRuntime()
         #End If
     End If
 End Sub
+
+Private Function CreateFile(ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal NoSecurity As Long, ByVal dwCreationDisposition As Long, Optional ByVal dwFlagsAndAttributes As Long, Optional ByVal hTemplateFile As Long) As Long
+    If IsNT Then
+        CreateFile = CreateFileW(StrPtr(lpFileName), dwDesiredAccess, dwShareMode, NoSecurity, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
+    Else
+        CreateFile = CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, NoSecurity, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
+    End If
+End Function
+
+Private Function SetFileAttributes(ByVal lpFileName As String, ByVal dwFileAttributes As Long) As Long
+    If IsNT Then
+        SetFileAttributes = SetFileAttributesW(StrPtr(lpFileName), dwFileAttributes)
+    Else
+        SetFileAttributes = SetFileAttributesA(lpFileName, dwFileAttributes)
+    End If
+End Function
 
 '=========================================================================
 ' IVszSequentialInStream interface
