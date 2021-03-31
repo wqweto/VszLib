@@ -27,7 +27,7 @@ VersionCompanyName="Unicontsoft"
 VersionFileDescription="7-zip VB6 Helper 1.0"
 VersionLegalCopyright="Copyright © 2012 Unicontsoft"
 VersionProductName="VszLib"
-CondComp="VszLogging = 1"
+CondComp="VszLogging = 0"
 CompilationType=0
 OptimizationType=2
 FavorPentiumPro(tm)=0

@@ -66,6 +66,7 @@ Private Declare Function SystemTimeToFileTime Lib "kernel32" (lpSystemTime As SY
 Private Declare Function LocalFileTimeToFileTime Lib "kernel32" (lpLocalFileTime As FILETIME, lpFileTime As FILETIME) As Long
 Private Declare Function SetFileAttributesA Lib "kernel32" (ByVal lpFileName As String, ByVal dwFileAttributes As Long) As Long
 Private Declare Function SetFileAttributesW Lib "kernel32" (ByVal lpFileName As Long, ByVal dwFileAttributes As Long) As Long
+Private Declare Function GetVersion Lib "kernel32" () As Long
 
 Private Type FILETIME
     dwLowDateTime       As Long
@@ -473,6 +474,15 @@ Private Function SetFileAttributes(ByVal lpFileName As String, ByVal dwFileAttri
     Else
         SetFileAttributes = SetFileAttributesA(lpFileName, dwFileAttributes)
     End If
+End Function
+
+Private Function IsNT() As Boolean
+    Static lVersion     As Long
+    
+    If lVersion = 0 Then
+        lVersion = GetVersion()
+    End If
+    IsNT = lVersion >= 0
 End Function
 
 '=========================================================================

@@ -326,6 +326,8 @@ Public Property Let Parameter(ParamName As String, Value As Variant)
         Select Case VarType(Value)
         Case vbLong, vbInteger, vbByte, vbDouble, vbSingle, vbDecimal
             Value = CLng(Value)
+        Case vbBoolean
+            Value = IIf(Value, "ON", "OFF")
         Case Else
             Value = CStr(Value)
         End Select
@@ -601,8 +603,8 @@ Public Function CompressArchive(ArchiveFile As String) As Boolean
     m_dblTotal = 0
     Set m_oOutArchive = VszCreateObject(pvGetClassID(ArchiveFile), VszGUIDFromString(IID_IOutArchive))
     If m_oOutArchive Is Nothing Then
+        On Error GoTo 0
         Err.Raise vbObjectError + 1, , ERR_NOT_SUPPORTED
-        Exit Function
     End If
     '--- set properties
     If Not m_cCustomParams Is Nothing Then
@@ -625,6 +627,7 @@ Public Function CompressArchive(ArchiveFile As String) As Boolean
     Set pOutStream = m_oOutStream
     If InIde Then
         Set m_oCacheStream = pvInitStream()
+        On Error GoTo 0
         m_oOutArchive.UpdateItems pOutStream, m_lCount, Me
     Else
         CompressArchive = pvWaitThread(pvThreadCall(pfnOutUpdateItems, lOutThis, ObjPtr(pOutStream), m_lCount, ObjPtr(pUpdateCallback)))
@@ -778,8 +781,8 @@ Private Function pvRegRead(sSubKey As String, sName As String) As String
     
     If RegOpenKeyEx(HKEY_LOCAL_MACHINE, sSubKey, 0, SAM_READ, hKey) = 0 Then
         If RegQueryValueEx(hKey, sName, 0, lType, ByVal 0&, lSize) = 0 Then
-            If lType = REG_SZ Then
-                sValue = String$(lSize, 0)
+            If lType = REG_SZ And lSize > 0 Then
+                sValue = String$(lSize - 1, 0)
                 If RegQueryValueEx(hKey, sName, 0, lType, ByVal sValue, lSize) = 0 Then
                     pvRegRead = sValue
                 End If
