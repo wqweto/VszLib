@@ -65,7 +65,8 @@ Private Declare Function FileTimeToLocalFileTime Lib "kernel32" (lpFileTime As A
 Private Declare Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function SystemTimeToFileTime Lib "kernel32" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
 Private Declare Function LocalFileTimeToFileTime Lib "kernel32" (lpLocalFileTime As FILETIME, lpFileTime As Any) As Long
-Private Declare Function FindFirstFile Lib "kernel32" Alias "FindFirstFileA" (ByVal lpFileName As String, lpFindFileData As WIN32_FIND_DATA) As Long
+'Private Declare Function FindFirstFile Lib "kernel32" Alias "FindFirstFileA" (ByVal lpFileName As String, lpFindFileData As WIN32_FIND_DATA) As Long
+Private Declare Function FindFirstFileW Lib "kernel32.dll" (ByVal lpFileName As Long, ByRef lpFindFileData As WIN32_FIND_DATA) As Long
 Private Declare Function FindClose Lib "kernel32" (ByVal hFindFile As Long) As Long
 Private Declare Function CallWindowProc Lib "user32" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As Long, ByVal hWnd As Long, ByVal Msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As Long
@@ -545,7 +546,7 @@ Public Function AddFile( _
     ElseIf m_lCount > UBound(m_uFiles) Then
         ReDim Preserve m_uFiles(0 To 2 * UBound(m_uFiles))
     End If
-    hFind = FindFirstFile(File, uData)
+    hFind = FindFirstFileW(StrPtr(File), uData)
     If hFind <> INVALID_HANDLE_VALUE Then
         Call FindClose(hFind)
         Call CopyMemory(cSize, uData.nFileSizeLow, 4)
